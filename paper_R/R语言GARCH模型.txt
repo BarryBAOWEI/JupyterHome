@@ -1,0 +1,8 @@
+rugarch包与R语言中的garch族模型
+http://www.dataguru.cn/article-794-1.html
+
+The realized GARCH model - R
+https://www.r-bloggers.com/the-realized-garch-model/
+
+均值方程中带外生变量的GARCH模型
+http://bbs.pinggu.org/thread-3216429-1-1.html
