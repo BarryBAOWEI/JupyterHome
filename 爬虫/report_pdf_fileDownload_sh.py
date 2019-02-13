@@ -70,7 +70,7 @@ def report_pdf_download(previous_save_file, file_save_root, error_save_root, py_
 #                     u = urllib.request.urlopen(stock_pdf[1]) # 下载文件
                     u = urllib.request.urlopen(stock_pdf[1], data_header, timeout=RESPONSE_TIMEOUT) # 下载文件，改为post形式
                 except:
-                    errorAddress = open(error_save_root+'/'+'errorAddressDownload.txt', 'a')
+                    errorAddress = open(error_save_root+'/'+'errorAddressDownload_SH.txt', 'a')
                     errorAddress.write(stock_pdf[1]+'\r\n')
                     errorAddress.close()
                     print(stock_pdf[1])
@@ -100,9 +100,9 @@ def report_pdf_download(previous_save_file, file_save_root, error_save_root, py_
 
             print(each_file+each_csv[:-4],'finished!')
 
-####### RUN ################################################################################################      
+####### RUN ################################################################################################
 
-report_pdf_download(previous_save_file = 'D:/report_pdf',
-                    file_save_root = 'D:/report_pdf_download',
+report_pdf_download(previous_save_file = 'D:/report_pdf_sh',
+                    file_save_root = 'D:/report_pdf_download_sh',
                     error_save_root = 'D:/report_pdf_error',
                     py_file = 'C:/Users/jxjsj/Desktop/JupyterHome/爬虫/report_pdf_fileDownload_sh.py') # 就是你的本py文件的具体路径，注意斜杠方向

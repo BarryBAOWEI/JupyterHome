@@ -6,7 +6,7 @@ import re
 
 # --正式开始爬虫--
 
-def getAlldownloadAddress(year_list, industry_list, out_put_file):
+def getAlldownloadAddress(year_list, industry_list, out_put_file, error_file):
     '''
     year_list     : 年份（字符串格式）的列表，如['2010','2011','2012','2013']
     industry_list : 行业（字符串格式）的列表，取自
@@ -64,11 +64,11 @@ def getAlldownloadAddress(year_list, industry_list, out_put_file):
                 'pageNum': ''
                 ,'pageSize': MAX_PAGESIZE
                 ,'tabName': 'fulltext'
-                ,'column': 'szse'
+                ,'column': 'sse'
                 ,'stock': ''
                 ,'searchkey': ''
                 ,'secid': ''
-                ,'plate': 'szmb'
+                ,'plate': 'shmb'
                 ,'category': 'category_ndbg_szsh;'
                 ,'trade': trade
                 ,'seDate': seDate
@@ -84,11 +84,11 @@ def getAlldownloadAddress(year_list, industry_list, out_put_file):
                 'pageNum': pageNum
                 ,'pageSize': MAX_PAGESIZE
                 ,'tabName': 'fulltext'
-                ,'column': 'szse'
+                ,'column': 'sse'
                 ,'stock': ''
                 ,'searchkey': ''
                 ,'secid': ''
-                ,'plate': 'szmb'
+                ,'plate': 'shmb'
                 ,'category': 'category_ndbg_szsh;'
                 ,'trade': trade
                 ,'seDate': seDate
@@ -128,7 +128,7 @@ def getAlldownloadAddress(year_list, industry_list, out_put_file):
                     year = re.findall('(20\d+)年',result[0])[0]
                 except:
                     print(result)
-                    errorAddress = open(out_put_file+'/'+'errorAddress.txt', 'a')
+                    errorAddress = open(error_file+'errorAddress_SH.txt', 'a')
                     for i in result:
                         errorAddress.write(i)
                     errorAddress.write('\r\n')
@@ -147,7 +147,7 @@ def getAlldownloadAddress(year_list, industry_list, out_put_file):
 
 ####### RUN ################################################################################################
             
-getAlldownloadAddress(year_list     = [str(2005+i) for i in range(4)], 
+getAlldownloadAddress(year_list     = [str(2014+i) for i in range(1)], 
                       industry_list = [
                                         '农、林、牧、渔业',
                                         '采矿业',
@@ -167,4 +167,5 @@ getAlldownloadAddress(year_list     = [str(2005+i) for i in range(4)],
                                         '文化、体育和娱乐业',
                                         '综合'
                                         ], 
-                      out_put_file  = 'D:/report_pdf/')
+                      out_put_file  = 'D:/report_pdf_sh/',
+                      error_file = 'D:/report_pdf_error/') # 自行创建
