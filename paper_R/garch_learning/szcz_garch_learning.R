@@ -11,19 +11,16 @@ library(fGarch)
 # install_github("cran/FinTS")
 # library(FinTS)
 
-data <- read.zoo('C:/Users/jxjsj/Desktop/JupyterHome/Data/SZZS_lnr_rv_w_m_ntd_080101-190131.csv',header=TRUE,sep=',')
+data <- read.zoo('C:/Users/jxjsj/Desktop/JupyterHome/Data/szcz_lnr_rv_w_m_ntd_080101-190131.csv',header=TRUE,sep=',')
 sample <- xts(x = data)
 
-# 上证指数2008-01-03 - 2018-11-01日历效应
+# 深证成指2008-01-03 - 2019-01-31日历效应
 
 ## 样本时间段调整
-## 2010.01初-2014.12末[489:1701],
-## 2014.11初-2016.03末[1659:2004],
-## 2016.02初-2018.11初*[1966:2635].
 sample.all = sample[490:2697,]
-sample.test1 = sample[490:1658,]
-sample.test2 = sample[1641:2004,]
-sample.test3 = sample[1982:2697,]
+sample.test1 = sample[490:1779,]
+sample.test2 = sample[1759:2109,]
+sample.test3 = sample[2087:2697,]
 
 # 回归准备-模型设定
 
@@ -152,7 +149,7 @@ abs(summary(lm_RV_sigma_test.mod3)$coeff[2]-1)
 
 #### 周内效应-ged ####
 spec2 = ugarchspec(
-  variance.model = list(model = "realGARCH", garchOrder = c(4,5)), 
+  variance.model = list(model = "realGARCH", garchOrder = c(1,1)), 
   mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = sample.test1[,c(16,17,19,20)]), 
   distribution.model = "ged")
 sgarch_test2 = ugarchfit(data=sample.test1[,1], spec = spec2, 
@@ -168,12 +165,31 @@ Box.test(stdd_residuals.test1,lag=m, type='Ljung')      # Ljung-Box统计量,标准残
 Box.test(stdd_residuals.test1^2,lag=m, type='Ljung')    # Ljung-Box统计量,标准残差平方的自相关,不显著则波动率方程建模充分
 
 
+### 单星期效应检验
+
+#### 周四效应-ged
+spec5 = ugarchspec(
+  variance.model = list(model = "realGARCH", garchOrder = c(4,5)), 
+  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = sample.test1[,c(19)]), 
+  distribution.model = "ged")
+sgarch_test5 = ugarchfit(data=sample.test1[,1], spec = spec5, 
+                         solver = "hybrid", realizedVol = sample.test1[,3])
+sgarch_test5
+plot(sgarch_test5)
+##### 标准化残差的Ljung-Box统计量 - 检验建模是否充分
+m <- round(log(length(sample.test1[,1])))                # Q(m)=ln(T)
+garch_at.test5 = sgarch_test5@fit[["residuals"]]
+garch_sigma.test5 = sgarch_test5@fit[["sigma"]]
+stdd_residuals.test5 = garch_at.test5/garch_sigma.test5
+Box.test(stdd_residuals.test5,lag=m, type='Ljung')      # Ljung-Box统计量,标准残差的自相关,不显著则收益率方程建模充分
+Box.test(stdd_residuals.test5^2,lag=m, type='Ljung')    # Ljung-Box统计量,标准残差平方的自相关,不显著则波动率方程建模充分
+
 ### 月内效应总体检验
 
 #### 月内效应-ged
 spec8 = ugarchspec(
-  variance.model = list(model = "realGARCH", garchOrder = c(5,5)), 
-  mean.model = list(armaOrder = c(1,1), include.mean = TRUE, external.regressors = as.matrix.data.frame(sample.test1[,c(4:8,10:15)])), 
+  variance.model = list(model = "realGARCH", garchOrder = c(2,2)), 
+  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = sample.test1[,c(4:8,10:15)]), 
   distribution.model = "ged")
 sgarch_test8 = ugarchfit(data=sample.test1[,1], spec = spec8, 
                          solver = "hybrid", realizedVol = sample.test1[,3])
@@ -188,12 +204,32 @@ Box.test(stdd_residuals.test3,lag=m, type='Ljung')      # Ljung-Box统计量,标准残
 Box.test(stdd_residuals.test3^2,lag=m, type='Ljung')    # Ljung-Box统计量,标准残差平方的自相关,不显著则波动率方程建模充分
 
 
+### 单月份效应检验
+
+#### 九月效应-ged
+spec12 = ugarchspec(
+  variance.model = list(model = "realGARCH", garchOrder = c(3,3)), 
+  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = sample.test1[,c(10)]), 
+  distribution.model = "ged")
+sgarch_test12 = ugarchfit(data=sample.test1[,1], spec = spec12, 
+                          solver = "hybrid", realizedVol = sample.test1[,3])
+sgarch_test12
+plot(sgarch_test12)
+##### 标准化残差的Ljung-Box统计量 - 检验建模是否充分
+m <- round(log(length(sample.test1[,1])))               # Q(m)=ln(T)
+garch_at.test4 = sgarch_test12@fit[["residuals"]]
+garch_sigma.test4 = sgarch_test12@fit[["sigma"]]
+stdd_residuals.test4 = garch_at.test4/garch_sigma.test4
+Box.test(stdd_residuals.test4,lag=m, type='Ljung')      # Ljung-Box统计量,标准残差的自相关,不显著则收益率方程建模充分
+Box.test(stdd_residuals.test4^2,lag=m, type='Ljung')    # Ljung-Box统计量,标准残差平方的自相关,不显著则波动率方程建模充分
+
+
 ### 假日效应总体检验
 
 #### 假日效应-ged
 spec14 = ugarchspec(
-  variance.model = list(model = "realGARCH", garchOrder = c(8,8)), 
-  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = as.matrix.data.frame(sample.test1[,c(23)])), 
+  variance.model = list(model = "realGARCH", garchOrder = c(1,1)), 
+  mean.model = list(armaOrder = c(1,1), include.mean = TRUE, external.regressors = as.matrix.data.frame(sample.test1[,c(23)])), 
   distribution.model = "ged")
 sgarch_test14 = ugarchfit(data=sample.test1[,1], spec = spec14, 
                           solver = "hybrid", realizedVol = sample.test1[,3])
@@ -213,7 +249,7 @@ Box.test(stdd_residuals.test5^2,lag=m, type='Ljung')    # Ljung-Box统计量,标准残
 #### 周内效应-ged ####
 spec2 = ugarchspec(
   variance.model = list(model = "realGARCH", garchOrder = c(1,1)), 
-  mean.model = list(armaOrder = c(1,1), include.mean = TRUE, external.regressors = as.matrix.data.frame(sample.test2[,c(16,17,19,20)])), 
+  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = sample.test2[,c(16,17,19,20)]), 
   distribution.model = "ged")
 sgarch_test2 = ugarchfit(data=sample.test2[,1], spec = spec2, 
                          solver = "hybrid", realizedVol = sample.test2[,3])
@@ -227,6 +263,25 @@ stdd_residuals.test1 = garch_at.test1/garch_sigma.test1
 Box.test(stdd_residuals.test1,lag=m, type='Ljung')      # Ljung-Box统计量,标准残差的自相关,不显著则收益率方程建模充分
 Box.test(stdd_residuals.test1^2,lag=m, type='Ljung')    # Ljung-Box统计量,标准残差平方的自相关,不显著则波动率方程建模充分
 
+
+### 单星期效应检验
+
+#### 周四效应-ged
+spec5 = ugarchspec(
+  variance.model = list(model = "realGARCH", garchOrder = c(4,5)),
+  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = sample.test2[,c(19)]), 
+  distribution.model = "ged")
+sgarch_test5 = ugarchfit(data=sample.test2[,1], spec = spec5, 
+                         solver = "hybrid", realizedVol = sample.test2[,3])
+sgarch_test5
+plot(sgarch_test5)
+##### 标准化残差的Ljung-Box统计量 - 检验建模是否充分
+m <- round(log(length(sample.test2[,1])))                # Q(m)=ln(T)
+garch_at.test5 = sgarch_test5@fit[["residuals"]]
+garch_sigma.test5 = sgarch_test5@fit[["sigma"]]
+stdd_residuals.test5 = garch_at.test5/garch_sigma.test5
+Box.test(stdd_residuals.test5,lag=m, type='Ljung')      # Ljung-Box统计量,标准残差的自相关,不显著则收益率方程建模充分
+Box.test(stdd_residuals.test5^2,lag=m, type='Ljung')    # Ljung-Box统计量,标准残差平方的自相关,不显著则波动率方程建模充分
 
 ### 月内效应总体检验
 
@@ -246,6 +301,26 @@ garch_sigma.test3 = sgarch_test8@fit[["sigma"]]
 stdd_residuals.test3 = garch_at.test3/garch_sigma.test3
 Box.test(stdd_residuals.test3,lag=m, type='Ljung')      # Ljung-Box统计量,标准残差的自相关,不显著则收益率方程建模充分
 Box.test(stdd_residuals.test3^2,lag=m, type='Ljung')    # Ljung-Box统计量,标准残差平方的自相关,不显著则波动率方程建模充分
+
+
+### 单月份效应检验
+
+#### 二六月效应-ged
+spec12 = ugarchspec(
+  variance.model = list(model = "realGARCH", garchOrder = c(1,1)), 
+  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = sample.test2[,c(5,9)]), 
+  distribution.model = "ged")
+sgarch_test12 = ugarchfit(data=sample.test2[,1], spec = spec12, 
+                          solver = "hybrid", realizedVol = sample.test2[,3])
+sgarch_test12
+plot(sgarch_test12)
+##### 标准化残差的Ljung-Box统计量 - 检验建模是否充分
+m <- round(log(length(sample.test2[,1])))               # Q(m)=ln(T)
+garch_at.test4 = sgarch_test12@fit[["residuals"]]
+garch_sigma.test4 = sgarch_test12@fit[["sigma"]]
+stdd_residuals.test4 = garch_at.test4/garch_sigma.test4
+Box.test(stdd_residuals.test4,lag=m, type='Ljung')      # Ljung-Box统计量,标准残差的自相关,不显著则收益率方程建模充分
+Box.test(stdd_residuals.test4^2,lag=m, type='Ljung')    # Ljung-Box统计量,标准残差平方的自相关,不显著则波动率方程建模充分
 
 
 ### 假日效应总体检验
@@ -293,7 +368,7 @@ Box.test(stdd_residuals.test1^2,lag=m, type='Ljung')    # Ljung-Box统计量,标准残
 
 #### 月内效应-ged
 spec8 = ugarchspec(
-  variance.model = list(model = "realGARCH", garchOrder = c(5,5)), 
+  variance.model = list(model = "realGARCH", garchOrder = c(1,1)), 
   mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = sample.test3[,c(4:8,10:15)]), 
   distribution.model = "ged")
 sgarch_test8 = ugarchfit(data=sample.test3[,1], spec = spec8, 
@@ -306,8 +381,7 @@ garch_at.test3 = sgarch_test8@fit[["residuals"]]
 garch_sigma.test3 = sgarch_test8@fit[["sigma"]]
 stdd_residuals.test3 = garch_at.test3/garch_sigma.test3
 Box.test(stdd_residuals.test3,lag=m, type='Ljung')      # Ljung-Box统计量,标准残差的自相关,不显著则收益率方程建模充分
-Box.test(stdd_residuals.test3^2,lag=m-1, type='Ljung')    # Ljung-Box统计量,标准残差平方的自相关,不显著则波动率方程建模充分
-
+Box.test(stdd_residuals.test3^2,lag=m, type='Ljung')    # Ljung-Box统计量,标准残差平方的自相关,不显著则波动率方程建模充分
 
 ### 假日效应总体检验
 
