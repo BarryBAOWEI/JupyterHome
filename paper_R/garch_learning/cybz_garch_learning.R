@@ -11,7 +11,7 @@ library(fGarch)
 # install_github("cran/FinTS")
 # library(FinTS)
 
-data <- read.zoo('C:/Users/jxjsj/Desktop/JupyterHome/Data/cybz_lnr_rv_w_m_ntd_100601-190131.csv',header=TRUE,sep=',')
+data <- read.zoo('C:/Users/jxjsj/Desktop/JupyterHome/Data/cybz_lnr_rv_w_m_ntd_100601-190131adj.csv',header=TRUE,sep=',')
 sample <- xts(x = data)
 
 # 创业板指2010-06-01 - 2019-01-31日历效应
@@ -338,6 +338,93 @@ sgarch_test14
 plot(sgarch_test14)
 ##### 标准化残差的Ljung-Box统计量 - 检验建模是否充分
 m <- round(log(length(sample.test3[,1])))               # Q(m)=ln(T)
+garch_at.test5 = sgarch_test14@fit[["residuals"]]
+garch_sigma.test5 = sgarch_test14@fit[["sigma"]]
+stdd_residuals.test5 = garch_at.test5/garch_sigma.test5
+Box.test(stdd_residuals.test5,lag=m, type='Ljung')      # Ljung-Box统计量,标准残差的自相关,不显著则收益率方程建模充分
+Box.test(stdd_residuals.test5^2,lag=m, type='Ljung')    # Ljung-Box统计量,标准残差平方的自相关,不显著则波动率方程建模充分
+
+
+
+###日历效应影响因素检验#####################################################################
+
+### 周历效应
+
+### 时间段选择
+sample.testc = sample.test1
+
+### 时段1 负周四效应 风险因素66、情绪因素48、政策因素102 11-11 
+### 时段2 无
+### 时段3 正周五效应 风险因素67、情绪因素49、政策因素103 00-11
+
+#### 周内效应-ged ####
+spec2 = ugarchspec(
+  variance.model = list(model = "realGARCH", garchOrder = c(1,1)), 
+  mean.model = list(armaOrder = c(1,1), include.mean = TRUE, external.regressors =as.matrix.data.frame(sample.testc[,c(16,17,19,20,102)])), 
+  distribution.model = "ged")
+sgarch_test2 = ugarchfit(data=sample.testc[,1], spec = spec2, 
+                         solver = "hybrid", realizedVol = sample.testc[,3])
+sgarch_test2
+plot(sgarch_test2)
+##### 标准化残差的Ljung-Box统计量 - 检验建模是否充分
+m <- round(log(length(sample.testc[,1])))                # Q(m)=ln(T)
+garch_at.test1 = sgarch_test2@fit[["residuals"]]
+garch_sigma.test1 = sgarch_test2@fit[["sigma"]]
+stdd_residuals.test1 = garch_at.test1/garch_sigma.test1
+Box.test(stdd_residuals.test1,lag=m, type='Ljung')      # Ljung-Box统计量,标准残差的自相关,不显著则收益率方程建模充分
+Box.test(stdd_residuals.test1^2,lag=m, type='Ljung')    # Ljung-Box统计量,标准残差平方的自相关,不显著则波动率方程建模充分
+
+##### 提取交互项系数
+sgarch_test2@fit[['solver']]$`sol`$`pars`[['mxreg5']]
+
+
+### 月历效应
+
+### 时间段选择
+sample.testc = sample.test3
+
+### 时段1 负一月效应   风险因素68、情绪因素50、政策因素104(22-22) 22-11
+### 时段2 正二月效应   风险因素69、情绪因素51、政策因素105 00-11
+### 时段3 负十二月效应 风险因素71、情绪因素53、政策因素107 00-11
+
+#### 月内效应-ged
+spec8 = ugarchspec(
+  variance.model = list(model = "realGARCH", garchOrder = c(1,1)), 
+  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = as.matrix.data.frame(sample.testc[,c(4:8,10:15,107)])), 
+  distribution.model = "ged")
+sgarch_test8 = ugarchfit(data=sample.testc[,1], spec = spec8, 
+                         solver = "hybrid", realizedVol = sample.testc[,3])
+sgarch_test8
+plot(sgarch_test8)
+##### 标准化残差的Ljung-Box统计量 - 检验建模是否充分
+m <- round(log(length(sample.testc[,1])))               # Q(m)=ln(T)
+garch_at.test3 = sgarch_test8@fit[["residuals"]]
+garch_sigma.test3 = sgarch_test8@fit[["sigma"]]
+stdd_residuals.test3 = garch_at.test3/garch_sigma.test3
+Box.test(stdd_residuals.test3,lag=m, type='Ljung')      # Ljung-Box统计量,标准残差的自相关,不显著则收益率方程建模充分
+Box.test(stdd_residuals.test3^2,lag=m, type='Ljung')    # Ljung-Box统计量,标准残差平方的自相关,不显著则波动率方程建模充分
+
+
+### 假日效应
+
+### 时间段选择
+sample.testc = sample.test2
+
+### 时段1 无
+### 时段2 无
+### 时段3 无
+
+#### 假日效应-ged
+spec14 = ugarchspec(
+  variance.model = list(model = "realGARCH", garchOrder = c(1,1)), 
+  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = sample.testc[,c(23,108)]), 
+  distribution.model = "ged")
+sgarch_test14 = ugarchfit(data=sample.testc[,1], spec = spec14, 
+                          solver = "hybrid", realizedVol = sample.testc[,3])
+sgarch_test14
+plot(sgarch_test14)
+##### 标准化残差的Ljung-Box统计量 - 检验建模是否充分
+m <- round(log(length(sample.testc[,1])))               # Q(m)=ln(T)
 garch_at.test5 = sgarch_test14@fit[["residuals"]]
 garch_sigma.test5 = sgarch_test14@fit[["sigma"]]
 stdd_residuals.test5 = garch_at.test5/garch_sigma.test5

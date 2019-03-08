@@ -1,8 +1,14 @@
+remove.packages()
+
+library(timeDate)
+library(timeSeries)
+library(fBasics)
+library(zoo)
 library(rugarch)
 library(fUnitRoots)
 library(xts)
 library(FinTS)
-library(fitdistrplus)
+# library(fitdistrplus)
 library(fGarch)
 
 # °²×°°ü or ´ÓgithubÉÏ°²×°°ü
@@ -11,19 +17,30 @@ library(fGarch)
 # install_github("cran/FinTS")
 # library(FinTS)
 
-data <- read.zoo('C:/Users/jxjsj/Desktop/JupyterHome/Data/SZZS_lnr_rv_w_m_ntd_080101-190131.csv',header=TRUE,sep=',')
+# # ÉÏÖ¤×ÛÖ¸
+# data <- read.zoo('C:/Users/jxjsj/Desktop/JupyterHome/Data/SZZS_lnr_rv_w_m_ntd_080101-190131adj.csv',header=TRUE,sep=',')
+# sample <- xts(x = data)
+# sample.all = sample[490:2697,]
+# sample.test1 = sample[490:1658,]
+# sample.test2 = sample[1641:2004,]
+# sample.test3 = sample[1982:2697,]
+
+# # ´´Òµ°åÖ¸
+# data <- read.zoo('C:/Users/jxjsj/Desktop/JupyterHome/Data/cybz_lnr_rv_w_m_ntd_100601-190131adj.csv',header=TRUE,sep=',')
+# sample <- xts(x = data)
+# sample.all = sample[1:2108,]
+# sample.test1 = sample[1:1109,]
+# sample.test2 = sample[1170:1435,]
+# sample.test3 = sample[1416:2108,]
+# 
+# ÉîÖ¤³ÉÖ¸
+data <- read.zoo('C:/Users/jxjsj/Desktop/JupyterHome/Data/szcz_lnr_rv_w_m_ntd_080101-190131adj.csv',header=TRUE,sep=',')
 sample <- xts(x = data)
-
-# ÉÏÖ¤Ö¸Êý2008-01-03 - 2018-11-01ÈÕÀúÐ§Ó¦
-
-## Ñù±¾Ê±¼ä¶Îµ÷Õû
-## 2010.01³õ-2014.12Ä©[489:1701],
-## 2014.11³õ-2016.03Ä©[1659:2004],
-## 2016.02³õ-2018.11³õ*[1966:2635].
 sample.all = sample[490:2697,]
-sample.test1 = sample[490:1658,]
-sample.test2 = sample[1641:2004,]
-sample.test3 = sample[1982:2697,]
+sample.test1 = sample[490:1779,]
+sample.test2 = sample[1759:2109,]
+sample.test3 = sample[2087:2697,]
+
 
 # »Ø¹é×¼±¸-Ä£ÐÍÉè¶¨
 
@@ -66,16 +83,6 @@ plot(sgarch.mod1)
 norm.test <- rnorm(10000, 0, 1)
 ks.test(stdd_residuals.mod1,norm.test)
 
-#### ÒÑÊµÏÖ²¨¶¯ÓëÔ¤²â²¨¶¯µÄ»Ø¹é·ÖÎö±È½Ï£ºRV = a + b*sigma + u£¬±È½ÏR^2 & |b-1| £¡²»Ì«ºÃÓÃ£¡
-garch_sigma.mod1 = sgarch.mod1@fit[["sigma"]]^2
-RV_sigma.mod1 = data.frame(y=as.vector(sample.all[,2]),
-                           var1=c(garch_sigma.mod1))
-lm_RV_sigma_test.mod1 = lm(y~1+var1,data=RV_sigma.mod1)
-##### R-square Ô½´óÔ½ºÃ
-summary(lm_RV_sigma_test.mod1)$r.squared
-##### |b-1| Ô½Ð¡Ô½ºÃ
-abs(summary(lm_RV_sigma_test.mod1)$coeff[2]-1)
-
 
 ### (2)Ñ§Éú·Ö²¼-std
 spec.mod2 = ugarchspec(
@@ -100,16 +107,6 @@ Box.test(stdd_residuals.mod2^2,lag=m, type='Ljung')    # Ljung-BoxÍ³¼ÆÁ¿,±ê×¼²Ð²
 plot(sgarch.mod2)
 std.test <- rt(10000, 4.5)
 ks.test(stdd_residuals.mod2,std.test)
-
-#### ÒÑÊµÏÖ²¨¶¯ÓëÔ¤²â²¨¶¯µÄ»Ø¹é·ÖÎö±È½Ï£ºRV = a + b*sigma + u£¬±È½ÏR^2 & |b-1|
-garch_sigma.mod2 = sgarch.mod2@fit[["sigma"]]^2
-RV_sigma.mod2 = data.frame(y=as.vector(sample.all[,2]),
-                           var1=c(garch_sigma.mod2))
-lm_RV_sigma_test.mod2 = lm(y~1+var1,data=RV_sigma.mod2)
-##### R-square Ô½´óÔ½ºÃ
-summary(lm_RV_sigma_test.mod2)$r.squared
-##### |b-1| Ô½Ð¡Ô½ºÃ
-abs(summary(lm_RV_sigma_test.mod2)$coeff[2]-1)
 
 
 ### (3)¹ãÒåÎó²î·Ö²¼-ged
@@ -136,31 +133,26 @@ plot(sgarch.mod3)
 ged.test <- rged(10000, 0, 1 ,1.2)
 ks.test(stdd_residuals.mod3,ged.test)
 
-#### ÒÑÊµÏÖ²¨¶¯ÓëÔ¤²â²¨¶¯µÄ»Ø¹é·ÖÎö±È½Ï£ºRV = a + b*sigma + u£¬±È½ÏR^2 & |b-1|
-garch_sigma.mod3 = sgarch.mod3@fit[["sigma"]]^2
-RV_sigma.mod3 = data.frame(y=as.vector(sample.all[,2]),
-                           var1=c(garch_sigma.mod3))
-lm_RV_sigma_test.mod3 = lm(y~1+var1,data=RV_sigma.mod3)
-##### R-square
-summary(lm_RV_sigma_test.mod3)$r.squared
-##### |b-1|
-abs(summary(lm_RV_sigma_test.mod3)$coeff[2]-1)
+
 ###########################################################################################
 
-###Ê±¶Î1#####################################################################
+###ÈÕÀúÐ§Ó¦¼ìÑé#####################################################################
+### Ê±¼ä¶ÎÑ¡Ôñ
+sample.testt = sample.test1
+
 ### ÖÜÄÚÐ§Ó¦×ÜÌå¼ìÑé
 
 #### ÖÜÄÚÐ§Ó¦-ged ####
 spec2 = ugarchspec(
   variance.model = list(model = "realGARCH", garchOrder = c(4,5)), 
-  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = sample.test1[,c(16,17,19,20)]), 
+  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = as.matrix.data.frame(sample.testt[,c(16,17,19,20)])), 
   distribution.model = "ged")
-sgarch_test2 = ugarchfit(data=sample.test1[,1], spec = spec2, 
-                         solver = "hybrid", realizedVol = sample.test1[,3])
+sgarch_test2 = ugarchfit(data=sample.testt[,1], spec = spec2, 
+                         solver = "hybrid", realizedVol = sample.testt[,3])
 sgarch_test2
 plot(sgarch_test2)
 ##### ±ê×¼»¯²Ð²îµÄLjung-BoxÍ³¼ÆÁ¿ - ¼ìÑé½¨Ä£ÊÇ·ñ³ä·Ö
-m <- round(log(length(sample.test1[,1])))                # Q(m)=ln(T)
+m <- round(log(length(sample.testt[,1])))                # Q(m)=ln(T)
 garch_at.test1 = sgarch_test2@fit[["residuals"]]
 garch_sigma.test1 = sgarch_test2@fit[["sigma"]]
 stdd_residuals.test1 = garch_at.test1/garch_sigma.test1
@@ -173,14 +165,14 @@ Box.test(stdd_residuals.test1^2,lag=m, type='Ljung')    # Ljung-BoxÍ³¼ÆÁ¿,±ê×¼²Ð
 #### ÔÂÄÚÐ§Ó¦-ged
 spec8 = ugarchspec(
   variance.model = list(model = "realGARCH", garchOrder = c(5,5)), 
-  mean.model = list(armaOrder = c(1,1), include.mean = TRUE, external.regressors = as.matrix.data.frame(sample.test1[,c(4:8,10:15)])), 
+  mean.model = list(armaOrder = c(1,1), include.mean = TRUE, external.regressors = as.matrix.data.frame(sample.testt[,c(4:8,10:15)])), 
   distribution.model = "ged")
-sgarch_test8 = ugarchfit(data=sample.test1[,1], spec = spec8, 
-                         solver = "hybrid", realizedVol = sample.test1[,3])
+sgarch_test8 = ugarchfit(data=sample.testt[,1], spec = spec8, 
+                         solver = "hybrid", realizedVol = sample.testt[,3])
 sgarch_test8
 plot(sgarch_test8)
 ##### ±ê×¼»¯²Ð²îµÄLjung-BoxÍ³¼ÆÁ¿ - ¼ìÑé½¨Ä£ÊÇ·ñ³ä·Ö
-m <- round(log(length(sample.test1[,1])))               # Q(m)=ln(T)
+m <- round(log(length(sample.testt[,1])))               # Q(m)=ln(T)
 garch_at.test3 = sgarch_test8@fit[["residuals"]]
 garch_sigma.test3 = sgarch_test8@fit[["sigma"]]
 stdd_residuals.test3 = garch_at.test3/garch_sigma.test3
@@ -193,54 +185,62 @@ Box.test(stdd_residuals.test3^2,lag=m, type='Ljung')    # Ljung-BoxÍ³¼ÆÁ¿,±ê×¼²Ð
 #### ¼ÙÈÕÐ§Ó¦-ged
 spec14 = ugarchspec(
   variance.model = list(model = "realGARCH", garchOrder = c(8,8)), 
-  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = as.matrix.data.frame(sample.test1[,c(23)])), 
+  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = as.matrix.data.frame(sample.testt[,c(23)])), 
   distribution.model = "ged")
-sgarch_test14 = ugarchfit(data=sample.test1[,1], spec = spec14, 
-                          solver = "hybrid", realizedVol = sample.test1[,3])
+sgarch_test14 = ugarchfit(data=sample.testt[,1], spec = spec14, 
+                          solver = "hybrid", realizedVol = sample.testt[,3])
 sgarch_test14
 plot(sgarch_test14)
 ##### ±ê×¼»¯²Ð²îµÄLjung-BoxÍ³¼ÆÁ¿ - ¼ìÑé½¨Ä£ÊÇ·ñ³ä·Ö
-m <- round(log(length(sample.test1[,1])))               # Q(m)=ln(T)
+m <- round(log(length(sample.testt[,1])))               # Q(m)=ln(T)
 garch_at.test5 = sgarch_test14@fit[["residuals"]]
 garch_sigma.test5 = sgarch_test14@fit[["sigma"]]
 stdd_residuals.test5 = garch_at.test5/garch_sigma.test5
 Box.test(stdd_residuals.test5,lag=m, type='Ljung')      # Ljung-BoxÍ³¼ÆÁ¿,±ê×¼²Ð²îµÄ×ÔÏà¹Ø,²»ÏÔÖøÔòÊÕÒæÂÊ·½³Ì½¨Ä£³ä·Ö
 Box.test(stdd_residuals.test5^2,lag=m, type='Ljung')    # Ljung-BoxÍ³¼ÆÁ¿,±ê×¼²Ð²îÆ½·½µÄ×ÔÏà¹Ø,²»ÏÔÖøÔò²¨¶¯ÂÊ·½³Ì½¨Ä£³ä·Ö
 
-###Ê±¶Î2#####################################################################
-### ÖÜÄÚÐ§Ó¦×ÜÌå¼ìÑé
+
+###ÈÕÀúÐ§Ó¦Ó°ÏìÒòËØ¼ìÑé#####################################################################
+
+### ÖÜÀúÐ§Ó¦
+
+### Ê±¼ä¶ÎÑ¡Ôñ
+sample.testc = sample.test3
 
 #### ÖÜÄÚÐ§Ó¦-ged ####
 spec2 = ugarchspec(
   variance.model = list(model = "realGARCH", garchOrder = c(1,1)), 
-  mean.model = list(armaOrder = c(1,1), include.mean = TRUE, external.regressors = as.matrix.data.frame(sample.test2[,c(16,17,19,20)])), 
+  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors =as.matrix.data.frame(sample.testc[,c(16,17,19,20,43)])), 
   distribution.model = "ged")
-sgarch_test2 = ugarchfit(data=sample.test2[,1], spec = spec2, 
-                         solver = "hybrid", realizedVol = sample.test2[,3])
+sgarch_test2 = ugarchfit(data=sample.testc[,1], spec = spec2, 
+                         solver = "hybrid", realizedVol = sample.testc[,3])
 sgarch_test2
 plot(sgarch_test2)
 ##### ±ê×¼»¯²Ð²îµÄLjung-BoxÍ³¼ÆÁ¿ - ¼ìÑé½¨Ä£ÊÇ·ñ³ä·Ö
-m <- round(log(length(sample.test2[,1])))                # Q(m)=ln(T)
+m <- round(log(length(sample.testc[,1])))                # Q(m)=ln(T)
 garch_at.test1 = sgarch_test2@fit[["residuals"]]
 garch_sigma.test1 = sgarch_test2@fit[["sigma"]]
 stdd_residuals.test1 = garch_at.test1/garch_sigma.test1
 Box.test(stdd_residuals.test1,lag=m, type='Ljung')      # Ljung-BoxÍ³¼ÆÁ¿,±ê×¼²Ð²îµÄ×ÔÏà¹Ø,²»ÏÔÖøÔòÊÕÒæÂÊ·½³Ì½¨Ä£³ä·Ö
 Box.test(stdd_residuals.test1^2,lag=m, type='Ljung')    # Ljung-BoxÍ³¼ÆÁ¿,±ê×¼²Ð²îÆ½·½µÄ×ÔÏà¹Ø,²»ÏÔÖøÔò²¨¶¯ÂÊ·½³Ì½¨Ä£³ä·Ö
 
+##### ÌáÈ¡½»»¥ÏîÏµÊý
+sgarch_test2@fit[['solver']]$`sol`$`pars`[['mxreg5']]
 
-### ÔÂÄÚÐ§Ó¦×ÜÌå¼ìÑé
+
+### ÔÂÀúÐ§Ó¦
 
 #### ÔÂÄÚÐ§Ó¦-ged
 spec8 = ugarchspec(
   variance.model = list(model = "realGARCH", garchOrder = c(1,1)), 
-  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = sample.test2[,c(4:8,10:15)]), 
+  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = as.matrix.data.frame(sample.testc[,c(4:8,10:15,49)])), 
   distribution.model = "ged")
-sgarch_test8 = ugarchfit(data=sample.test2[,1], spec = spec8, 
-                         solver = "hybrid", realizedVol = sample.test2[,3])
+sgarch_test8 = ugarchfit(data=sample.testc[,1], spec = spec8, 
+                         solver = "hybrid", realizedVol = sample.testc[,3])
 sgarch_test8
 plot(sgarch_test8)
 ##### ±ê×¼»¯²Ð²îµÄLjung-BoxÍ³¼ÆÁ¿ - ¼ìÑé½¨Ä£ÊÇ·ñ³ä·Ö
-m <- round(log(length(sample.test2[,1])))               # Q(m)=ln(T)
+m <- round(log(length(sample.testc[,1])))               # Q(m)=ln(T)
 garch_at.test3 = sgarch_test8@fit[["residuals"]]
 garch_sigma.test3 = sgarch_test8@fit[["sigma"]]
 stdd_residuals.test3 = garch_at.test3/garch_sigma.test3
@@ -248,80 +248,19 @@ Box.test(stdd_residuals.test3,lag=m, type='Ljung')      # Ljung-BoxÍ³¼ÆÁ¿,±ê×¼²Ð
 Box.test(stdd_residuals.test3^2,lag=m, type='Ljung')    # Ljung-BoxÍ³¼ÆÁ¿,±ê×¼²Ð²îÆ½·½µÄ×ÔÏà¹Ø,²»ÏÔÖøÔò²¨¶¯ÂÊ·½³Ì½¨Ä£³ä·Ö
 
 
-### ¼ÙÈÕÐ§Ó¦×ÜÌå¼ìÑé
+### ¼ÙÈÕÐ§Ó¦
 
 #### ¼ÙÈÕÐ§Ó¦-ged
 spec14 = ugarchspec(
   variance.model = list(model = "realGARCH", garchOrder = c(1,1)), 
-  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = sample.test2[,c(23)]), 
+  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = sample.testc[,c(23,50)]), 
   distribution.model = "ged")
-sgarch_test14 = ugarchfit(data=sample.test2[,1], spec = spec14, 
-                          solver = "hybrid", realizedVol = sample.test2[,3])
+sgarch_test14 = ugarchfit(data=sample.testc[,1], spec = spec14, 
+                          solver = "hybrid", realizedVol = sample.testc[,3])
 sgarch_test14
 plot(sgarch_test14)
 ##### ±ê×¼»¯²Ð²îµÄLjung-BoxÍ³¼ÆÁ¿ - ¼ìÑé½¨Ä£ÊÇ·ñ³ä·Ö
-m <- round(log(length(sample.test2[,1])))               # Q(m)=ln(T)
-garch_at.test5 = sgarch_test14@fit[["residuals"]]
-garch_sigma.test5 = sgarch_test14@fit[["sigma"]]
-stdd_residuals.test5 = garch_at.test5/garch_sigma.test5
-Box.test(stdd_residuals.test5,lag=m, type='Ljung')      # Ljung-BoxÍ³¼ÆÁ¿,±ê×¼²Ð²îµÄ×ÔÏà¹Ø,²»ÏÔÖøÔòÊÕÒæÂÊ·½³Ì½¨Ä£³ä·Ö
-Box.test(stdd_residuals.test5^2,lag=m, type='Ljung')    # Ljung-BoxÍ³¼ÆÁ¿,±ê×¼²Ð²îÆ½·½µÄ×ÔÏà¹Ø,²»ÏÔÖøÔò²¨¶¯ÂÊ·½³Ì½¨Ä£³ä·Ö
-
-
-###Ê±¶Î3#####################################################################
-### ÖÜÄÚÐ§Ó¦×ÜÌå¼ìÑé
-
-#### ÖÜÄÚÐ§Ó¦-ged ####
-spec2 = ugarchspec(
-  variance.model = list(model = "realGARCH", garchOrder = c(1,1)), 
-  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = sample.test3[,c(16,17,19,20)]), 
-  distribution.model = "ged")
-sgarch_test2 = ugarchfit(data=sample.test3[,1], spec = spec2, 
-                         solver = "hybrid", realizedVol = sample.test3[,3])
-sgarch_test2
-plot(sgarch_test2)
-##### ±ê×¼»¯²Ð²îµÄLjung-BoxÍ³¼ÆÁ¿ - ¼ìÑé½¨Ä£ÊÇ·ñ³ä·Ö
-m <- round(log(length(sample.test3[,1])))                # Q(m)=ln(T)
-garch_at.test1 = sgarch_test2@fit[["residuals"]]
-garch_sigma.test1 = sgarch_test2@fit[["sigma"]]
-stdd_residuals.test1 = garch_at.test1/garch_sigma.test1
-Box.test(stdd_residuals.test1,lag=m, type='Ljung')      # Ljung-BoxÍ³¼ÆÁ¿,±ê×¼²Ð²îµÄ×ÔÏà¹Ø,²»ÏÔÖøÔòÊÕÒæÂÊ·½³Ì½¨Ä£³ä·Ö
-Box.test(stdd_residuals.test1^2,lag=m, type='Ljung')    # Ljung-BoxÍ³¼ÆÁ¿,±ê×¼²Ð²îÆ½·½µÄ×ÔÏà¹Ø,²»ÏÔÖøÔò²¨¶¯ÂÊ·½³Ì½¨Ä£³ä·Ö
-
-
-### ÔÂÄÚÐ§Ó¦×ÜÌå¼ìÑé
-
-#### ÔÂÄÚÐ§Ó¦-ged
-spec8 = ugarchspec(
-  variance.model = list(model = "realGARCH", garchOrder = c(5,5)), 
-  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = sample.test3[,c(4:8,10:15)]), 
-  distribution.model = "ged")
-sgarch_test8 = ugarchfit(data=sample.test3[,1], spec = spec8, 
-                         solver = "hybrid", realizedVol = sample.test3[,3])
-sgarch_test8
-plot(sgarch_test8)
-##### ±ê×¼»¯²Ð²îµÄLjung-BoxÍ³¼ÆÁ¿ - ¼ìÑé½¨Ä£ÊÇ·ñ³ä·Ö
-m <- round(log(length(sample.test3[,1])))               # Q(m)=ln(T)
-garch_at.test3 = sgarch_test8@fit[["residuals"]]
-garch_sigma.test3 = sgarch_test8@fit[["sigma"]]
-stdd_residuals.test3 = garch_at.test3/garch_sigma.test3
-Box.test(stdd_residuals.test3,lag=m, type='Ljung')      # Ljung-BoxÍ³¼ÆÁ¿,±ê×¼²Ð²îµÄ×ÔÏà¹Ø,²»ÏÔÖøÔòÊÕÒæÂÊ·½³Ì½¨Ä£³ä·Ö
-Box.test(stdd_residuals.test3^2,lag=m-1, type='Ljung')    # Ljung-BoxÍ³¼ÆÁ¿,±ê×¼²Ð²îÆ½·½µÄ×ÔÏà¹Ø,²»ÏÔÖøÔò²¨¶¯ÂÊ·½³Ì½¨Ä£³ä·Ö
-
-
-### ¼ÙÈÕÐ§Ó¦×ÜÌå¼ìÑé
-
-#### ¼ÙÈÕÐ§Ó¦-ged
-spec14 = ugarchspec(
-  variance.model = list(model = "realGARCH", garchOrder = c(1,1)), 
-  mean.model = list(armaOrder = c(0,0), include.mean = TRUE, external.regressors = sample.test3[,c(23)]), 
-  distribution.model = "ged")
-sgarch_test14 = ugarchfit(data=sample.test3[,1], spec = spec14, 
-                          solver = "hybrid", realizedVol = sample.test3[,3])
-sgarch_test14
-plot(sgarch_test14)
-##### ±ê×¼»¯²Ð²îµÄLjung-BoxÍ³¼ÆÁ¿ - ¼ìÑé½¨Ä£ÊÇ·ñ³ä·Ö
-m <- round(log(length(sample.test3[,1])))               # Q(m)=ln(T)
+m <- round(log(length(sample.testc[,1])))               # Q(m)=ln(T)
 garch_at.test5 = sgarch_test14@fit[["residuals"]]
 garch_sigma.test5 = sgarch_test14@fit[["sigma"]]
 stdd_residuals.test5 = garch_at.test5/garch_sigma.test5
