@@ -205,12 +205,12 @@ def algo(context):
         pre_fin = pre_fin.apply(lambda x: (x-np.mean(x))/np.std(x))
         # 储存本期的因子数据以及收盘价数据，供下一期使用
         context.pre_fin, context.pre_close = fin, now_close
-        context.period += 1
     else:
         # 不是第一期，则读取上一期储存的因子数据及收盘价数据copy()
         pre_fin,pre_close = context.pre_fin.copy(), context.pre_close.copy()
         # 将本期因子数据及收盘价储存供下期使用
-        context.fin, context.pre_close = fin, now_close
+        context.pre_fin, context.pre_close = fin, now_close
+    context.period += 1
     ############################################################################################################
     ############################################################################################################
     ############################################################################################################
@@ -280,7 +280,7 @@ if __name__ == '__main__':
         filename='main.py',
         mode=MODE_BACKTEST,
         token='f69f85e5e8f97fab3dda4e3641dc722acca1c2e0',
-        backtest_start_time='2015-01-01 08:00:00',
+        backtest_start_time='2011-01-01 08:00:00',
         backtest_end_time='2019-05-22 16:00:00',
         backtest_adjust=ADJUST_PREV,
         backtest_initial_cash=10000000,
